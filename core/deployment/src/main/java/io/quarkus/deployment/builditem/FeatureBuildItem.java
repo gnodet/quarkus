@@ -12,6 +12,11 @@ public final class FeatureBuildItem extends MultiBuildItem {
     public static final String AGROAL = "agroal";
     public static final String KUBERNETES = "kubernetes";
     public static final String CAMEL_CORE = "camel-core";
+    public static final String CAMEL_BEAN = "camel-bean";
+    public static final String CAMEL_TIMER = "camel-timer";
+    public static final String CAMEL_FILE = "camel-file";
+    public static final String CAMEL_LOG = "camel-log";
+    public static final String CAMEL_TWITTER = "camel-twitter";
     public static final String CAMEL_INFINISPAN = "camel-infinispan";
     public static final String CAMEL_AWS_S3 = "camel-aws-s3";
     public static final String CAMEL_AWS_SQS = "camel-aws-sqs";

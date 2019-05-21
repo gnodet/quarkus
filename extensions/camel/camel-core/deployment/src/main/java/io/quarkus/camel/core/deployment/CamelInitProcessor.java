@@ -73,12 +73,12 @@ class CamelInitProcessor {
                 .collect(Collectors.toList());
 
         visitServices((name, type) -> {
-            LoggerFactory.getLogger(CamelInitProcessor.class).debug("Binding camel service {} with type {}", name, type);
+            LoggerFactory.getLogger(CamelInitProcessor.class).info("Binding camel service {} with type {}", name, type);
             registry.bind(name, type,
                     recorderContext.newInstance(type.getName()));
         });
 
-        RuntimeValue<CamelRuntime> camelRuntime = template.create(registry, properties, builders);
+        RuntimeValue<CamelRuntime> camelRuntime = template.create(registry, properties, builders, buildTimeConfig);
 
         runtimeBeans
                 .produce(RuntimeBeanBuildItem.builder(CamelRuntime.class).setRuntimeValue(camelRuntime).build());
@@ -153,7 +153,6 @@ class CamelInitProcessor {
                 if (k.equals("class")) {
                     String clazz = entry.getValue().toString();
                     Class<?> cl = Class.forName(clazz);
-
                     consumer.accept(name, cl);
                 }
             }

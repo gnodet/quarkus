@@ -11,6 +11,8 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.ShutdownableService;
 import org.apache.camel.component.properties.PropertiesComponent;
+import org.apache.camel.impl.DefaultModel;
+import org.apache.camel.model.Model;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.spi.Registry;
@@ -47,17 +49,17 @@ public class FastCamelRuntime implements CamelRuntime {
     @Override
     public void init(BuildTime buildTimeConfig) {
         this.buildTimeConfig = buildTimeConfig;
-        if (!buildTimeConfig.deferInitPhase) {
-            doInit();
-        }
+        //        if (!buildTimeConfig.deferInitPhase) {
+        doInit();
+        //        }
     }
 
     @Override
     public void start(Runtime runtimeConfig) throws Exception {
         this.runtimeConfig = runtimeConfig;
-        if (buildTimeConfig.deferInitPhase) {
-            doInit();
-        }
+        //        if (buildTimeConfig.deferInitPhase) {
+        //            doInit();
+        //        }
         doStart();
     }
 
@@ -125,6 +127,9 @@ public class FastCamelRuntime implements CamelRuntime {
     }
 
     protected void loadRoutes(CamelContext context) throws Exception {
+        Model model = new DefaultModel(context);
+        context.adapt(FastCamelContext.class).setModel(model);
+
         for (RoutesBuilder b : builders) {
             context.addRoutes(b);
         }
@@ -134,19 +139,19 @@ public class FastCamelRuntime implements CamelRuntime {
                 .collect(Collectors.toList());
         if (ObjectHelper.isNotEmpty(routesUris)) {
             log.debug("Loading xml routes from {}", routesUris);
-            ModelCamelContext mcc = context.adapt(ModelCamelContext.class);
             for (String routesUri : routesUris) {
                 // TODO: if pointing to a directory, we should load all xmls in it
                 //   (maybe with glob support in it to be complete)
-                try (InputStream is = ResourceHelper.resolveMandatoryResourceAsInputStream(mcc, routesUri.trim())) {
-                    mcc.addRouteDefinitions(is);
+                try (InputStream is = ResourceHelper.resolveMandatoryResourceAsInputStream(context, routesUri.trim())) {
+                    model.addRouteDefinitions(is);
                 }
             }
         } else {
             log.debug("No xml routes configured");
         }
 
-        context.adapt(FastCamelContext.class).reifyRoutes();
+        model.startRouteDefinitions();
+        context.adapt(FastCamelContext.class).setModel(null);
     }
 
     protected CamelContext createContext() {

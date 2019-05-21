@@ -20,8 +20,12 @@ public class CamelTemplate {
     public RuntimeValue<CamelRuntime> create(
             Registry registry,
             Properties properties,
-            List<RuntimeValue<?>> builders) {
+            List<RuntimeValue<?>> builders,
+            CamelConfig.BuildTime buildTimeConfig) {
 
+        if (buildTimeConfig.deferInitPhase) {
+
+        }
         FastCamelRuntime runtime = new FastCamelRuntime();
 
         runtime.setRegistry(registry);

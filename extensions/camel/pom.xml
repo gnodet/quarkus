@@ -17,6 +17,12 @@
 
     <modules>
         <module>camel-core</module>
+        <module>camel-xml</module>
+        <module>camel-bean</module>
+        <module>camel-file</module>
+        <module>camel-log</module>
+        <module>camel-timer</module>
+        <module>camel-twitter</module>
         <module>camel-aws-s3</module>
         <module>camel-aws-sqs</module>
         <module>camel-salesforce</module>

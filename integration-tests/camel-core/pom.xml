@@ -32,6 +32,10 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-camel-bean</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-camel-netty4-http</artifactId>
         </dependency>
         <dependency>

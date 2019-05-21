@@ -18,9 +18,6 @@ import org.apache.camel.Converter;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Producer;
 import org.apache.camel.TypeConverter;
-import org.apache.camel.component.file.GenericFile;
-import org.apache.camel.component.file.GenericFileProcessStrategy;
-import org.apache.camel.component.file.strategy.GenericFileProcessStrategyFactory;
 import org.apache.camel.spi.ExchangeFormatter;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationTarget.Kind;
@@ -54,8 +51,7 @@ class CamelProcessor {
             Consumer.class,
             Producer.class,
             TypeConverter.class,
-            ExchangeFormatter.class,
-            GenericFileProcessStrategy.class);
+            ExchangeFormatter.class);
 
     private static final List<Class<? extends Annotation>> CAMEL_REFLECTIVE_ANNOTATIONS = Arrays.asList();
 
@@ -180,9 +176,6 @@ class CamelProcessor {
                 .filter(ai -> converterClasses.contains(ai.target().asMethod().declaringClass()))
                 .map(ai -> ai.target().asMethod())
                 .forEach(this::addReflectiveMethod);
-
-        addReflectiveClass(false, GenericFile.class.getName());
-        addReflectiveClass(true, GenericFileProcessStrategyFactory.class.getName());
 
         CamelSupport.resources(applicationArchivesBuildItem, "META-INF/maven/org.apache.camel/camel-core")
                 .forEach(this::addResource);
