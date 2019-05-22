@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.Route;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.RuntimeCamelException;
@@ -87,7 +88,7 @@ public class FastCamelRuntime implements CamelRuntime {
             this.context.getTypeConverterRegistry().setInjector(this.context.getInjector());
             fireEvent(InitializingEvent.class, new InitializingEvent());
             if (buildTimeConfig.disableJaxb) {
-                this.context.setModelJAXBContextFactory(() -> {
+                this.context.adapt(ExtendedCamelContext.class).setModelJAXBContextFactory(() -> {
                     throw new UnsupportedOperationException();
                 });
             } else {
@@ -95,7 +96,7 @@ public class FastCamelRuntime implements CamelRuntime {
                 // when running in native mode, but lazy create it in java mode so that we don't
                 // waste time if using java routes
                 if (ImageInfo.inImageBuildtimeCode()) {
-                    context.adapt(ModelCamelContext.class).getModelJAXBContextFactory().newJAXBContext();
+                    context.adapt(ExtendedCamelContext.class).getModelJAXBContextFactory().newJAXBContext();
                 }
             }
             this.context.init();
