@@ -1,8 +1,10 @@
 package io.quarkus.camel.core.runtime.support;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.camel.CamelContext;
@@ -12,9 +14,6 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.ShutdownableService;
 import org.apache.camel.component.properties.PropertiesComponent;
-import org.apache.camel.impl.DefaultModel;
-import org.apache.camel.model.Model;
-import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.support.ResourceHelper;
@@ -43,7 +42,7 @@ public class FastCamelRuntime implements CamelRuntime {
     protected BeanContainer beanContainer;
     protected Registry registry;
     protected Properties properties;
-    protected List<RoutesBuilder> builders;
+    protected List<RoutesBuilder> builders = new ArrayList<>();
     protected BuildTime buildTimeConfig;
     protected Runtime runtimeConfig;
 
@@ -128,7 +127,7 @@ public class FastCamelRuntime implements CamelRuntime {
     }
 
     protected void loadRoutes(CamelContext context) throws Exception {
-        Model model = new DefaultModel(context);
+        FastModel model = new FastModel(context);
         context.adapt(FastCamelContext.class).setModel(model);
 
         for (RoutesBuilder b : builders) {
@@ -152,7 +151,8 @@ public class FastCamelRuntime implements CamelRuntime {
         }
 
         model.startRouteDefinitions();
-        context.adapt(FastCamelContext.class).setModel(null);
+        context.adapt(FastCamelContext.class).clearModel();
+        builders.clear();
     }
 
     protected CamelContext createContext() {
@@ -187,8 +187,8 @@ public class FastCamelRuntime implements CamelRuntime {
         this.properties.put(key, value);
     }
 
-    public void setBuilders(List<RoutesBuilder> builders) {
-        this.builders = builders;
+    public List<RoutesBuilder> getBuilders() {
+        return builders;
     }
 
     public CamelContext getContext() {

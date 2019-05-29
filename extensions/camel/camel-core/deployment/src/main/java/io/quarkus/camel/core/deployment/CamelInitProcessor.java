@@ -3,7 +3,7 @@ package io.quarkus.camel.core.deployment;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +55,7 @@ class CamelInitProcessor {
 
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(applicationArchiveMarkers = { CamelSupport.CAMEL_SERVICE_BASE_PATH, CamelSupport.CAMEL_ROOT_PACKAGE_DIRECTORY })
-    CamelRuntimeBuildItem createInitTask(RecorderContext recorderContext, CamelTemplate template,
+    CamelRuntimeBuildItem createRuntime(RecorderContext recorderContext, CamelTemplate template,
             BuildProducer<RuntimeBeanBuildItem> runtimeBeans) {
         Properties properties = new Properties();
         Config configProvider = ConfigProvider.getConfig();
@@ -69,8 +69,13 @@ class CamelInitProcessor {
         }
 
         RuntimeRegistry registry = new RuntimeRegistry();
-        List<RuntimeValue<?>> builders = getBuildTimeRouteBuilderClasses().map(recorderContext::newInstance)
-                .collect(Collectors.toList());
+        List<RuntimeValue<?>> builders;
+        if (buildTimeConfig.deferInitPhase) {
+            builders = getBuildTimeRouteBuilderClasses().map(recorderContext::newInstance)
+                    .collect(Collectors.toList());
+        } else {
+            builders = new ArrayList<>();
+        }
 
         visitServices((name, type) -> {
             LoggerFactory.getLogger(CamelInitProcessor.class).info("Binding camel service {} with type {}", name, type);
@@ -102,17 +107,23 @@ class CamelInitProcessor {
 
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep(applicationArchiveMarkers = { CamelSupport.CAMEL_SERVICE_BASE_PATH, CamelSupport.CAMEL_ROOT_PACKAGE_DIRECTORY })
-    void createInitTask(
+    void initTask(
             BeanContainerBuildItem beanContainerBuildItem,
             CamelRuntimeBuildItem runtime,
             CamelTemplate template) throws Exception {
 
-        template.init(beanContainerBuildItem.getValue(), runtime.getRuntime(), buildTimeConfig);
+        List<String> builders;
+        if (!buildTimeConfig.deferInitPhase) {
+            builders = getBuildTimeRouteBuilderClasses().collect(Collectors.toList());
+        } else {
+            builders = new ArrayList<>();
+        }
+        template.init(beanContainerBuildItem.getValue(), runtime.getRuntime(), builders, buildTimeConfig);
     }
 
     @Record(ExecutionTime.RUNTIME_INIT)
     @BuildStep(applicationArchiveMarkers = { CamelSupport.CAMEL_SERVICE_BASE_PATH, CamelSupport.CAMEL_ROOT_PACKAGE_DIRECTORY })
-    void createRuntimeInitTask(
+    void startTask(
             CamelTemplate template,
             CamelRuntimeBuildItem runtime,
             ShutdownContextBuildItem shutdown,

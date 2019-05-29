@@ -18,8 +18,10 @@ import org.apache.camel.Producer;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.impl.DefaultExecutorServiceManager;
 import org.apache.camel.impl.DefaultModelJAXBContextFactory;
+import org.apache.camel.impl.RouteService;
 import org.apache.camel.impl.converter.DefaultTypeConverter;
 import org.apache.camel.impl.engine.AbstractCamelContext;
+import org.apache.camel.impl.engine.BaseRouteService;
 import org.apache.camel.impl.engine.BeanProcessorFactoryResolver;
 import org.apache.camel.impl.engine.BeanProxyFactoryResolver;
 import org.apache.camel.impl.engine.DefaultAsyncProcessorAwaitManager;
@@ -83,6 +85,7 @@ import org.apache.camel.spi.UuidGenerator;
 import org.apache.camel.spi.ValidatorRegistry;
 
 import io.quarkus.camel.core.runtime.CamelRuntime;
+import io.quarkus.camel.core.runtime.support.FastModel.FastRouteContext;
 
 public class FastCamelContext extends AbstractCamelContext {
 
@@ -91,10 +94,20 @@ public class FastCamelContext extends AbstractCamelContext {
     public FastCamelContext() {
         super(false);
         setInitialization(Initialization.Eager);
+        setTracing(Boolean.FALSE);
+        setDebugging(Boolean.FALSE);
+        setMessageHistory(Boolean.FALSE);
     }
 
     public void setModel(Object model) {
         this.model = model;
+    }
+
+    public void clearModel() {
+        this.model = null;
+        for (BaseRouteService rs : getRouteServices().values()) {
+            ((FastRouteContext) rs.getRouteContext()).clearModel();
+        }
     }
 
     @Override
