@@ -433,6 +433,7 @@
                     <configuration>
                         <properties>
                             <predictiveSelection>
+                                <name>unused</name><!-- unused, but required in Maven 4 -->
                                 <enabled>${develocity.pts.active}</enabled>
                             </predictiveSelection>
                         </properties>
@@ -461,6 +462,7 @@
                     <configuration>
                         <properties>
                             <predictiveSelection>
+                                <name>unused</name><!-- unused, but required in Maven 4 -->
                                 <enabled>${develocity.pts.active}</enabled>
                             </predictiveSelection>
                         </properties>
