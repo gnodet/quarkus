@@ -353,7 +353,14 @@ public class BootstrapMavenContext {
                             throw new BootstrapMavenException("Settings problem encountered at " + problem.getLocation(),
                                     problem.getException());
                         default:
-                            log.warn("Settings problem encountered at " + problem.getLocation(), problem.getException());
+                            // When Maven 4 is used, the installation settings.xml contains the
+                            // <repositories> tag which is not supported by Maven 3 settings reader
+                            // used by Quarkus. The <repositories> contains a repository definition
+                            // for Maven Central, but the Maven 3 model builder will load it from
+                            // the super POM. See https://issues.apache.org/jira/browse/MNG-4645.
+                            if (!problem.getMessage().contains("Unrecognised tag: 'repositories'")) {
+                                log.warn("Settings problem encountered at " + problem.getLocation(), problem.getException());
+                            }
                     }
                 }
             }
