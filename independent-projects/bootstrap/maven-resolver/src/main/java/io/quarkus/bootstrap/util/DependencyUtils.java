@@ -161,13 +161,18 @@ public class DependencyUtils {
     }
 
     public static ResolvedDependencyBuilder toAppArtifact(Artifact artifact, WorkspaceModule module) {
+        String version = artifact.getVersion();
+        // If the artifact has no version but we have a workspace module, use the module's version
+        if ((version == null || version.isEmpty()) && module != null) {
+            version = module.getId().getVersion();
+        }
         return ResolvedDependencyBuilder.newInstance()
                 .setWorkspaceModule(module)
                 .setGroupId(artifact.getGroupId())
                 .setArtifactId(artifact.getArtifactId())
                 .setClassifier(artifact.getClassifier())
                 .setType(artifact.getExtension())
-                .setVersion(artifact.getVersion())
+                .setVersion(version)
                 .setResolvedPaths(artifact.getFile() == null ? PathList.empty() : PathList.of(artifact.getFile().toPath()));
     }
 

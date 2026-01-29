@@ -164,9 +164,15 @@ public class LocalWorkspace implements WorkspaceModelResolver, WorkspaceReader, 
 
     public LocalProject getLocalProjectOrNull(String groupId, String artifactId, String version) {
         final LocalProject lp = getProject(groupId, artifactId);
+
+        // If the requested version is empty and we have a workspace project, return it
+        // This handles the case where a POM has a dependency without a version that refers to a workspace module
+        if (version.isEmpty()) {
+            return lp;
+        }
+
         if (lp == null
-                || !version.isEmpty()
-                        && !lp.getVersion().equals(version)
+                || !lp.getVersion().equals(version)
                         && !(ModelUtils.isUnresolvedVersion(version)
                                 && lp.getVersion().equals(resolvedVersion))) {
             return null;
@@ -233,16 +239,17 @@ public class LocalWorkspace implements WorkspaceModelResolver, WorkspaceReader, 
 
     @Override
     public List<String> findVersions(Artifact artifact) {
-        if (lastFindVersionsKey != null && lastFindVersionsKey.getArtifactId().equals(artifact.getArtifactId())
-                && artifact.getVersion().equals(lastFindVersions.get(0))
-                && lastFindVersionsKey.getGroupId().equals(artifact.getGroupId())) {
-            return lastFindVersions;
-        }
-        if (findArtifact(artifact) == null) {
+        // Check if we have a workspace project for this artifact
+        final LocalProject lp = getLocalProjectOrNull(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
+        if (lp == null) {
             return List.of();
         }
+
+        // Return the version from the workspace project
+        final String version = lp.getVersion();
         lastFindVersionsKey = ArtifactKey.ga(artifact.getGroupId(), artifact.getArtifactId());
-        return lastFindVersions = List.of(artifact.getVersion());
+        lastFindVersions = List.of(version);
+        return lastFindVersions;
     }
 
     public String getResolvedVersion() {
